@@ -47,7 +47,7 @@ Present to the user and ask them to confirm or correct before proceeding.
 
 ## Step 3 — Skill Audit (first run only)
 
-Read `skill_clusters.md` to understand the full cluster definitions. Then work through the cluster decision matrix with the user:
+Read `.claude/refs/skill_clusters.md` to understand the full cluster definitions. Then work through the cluster decision matrix with the user:
 
 **For each cluster, ask:**
 
@@ -197,7 +197,7 @@ Before writing each manifest, evaluate the draft against this checklist:
 
 ## Step 7 — Write Manifests
 
-Produce one `modernization_manifest_{cluster}.md` per in-scope cluster using the schema in `modernization_manifest_schema.md`.
+Produce one `modernization_manifest_{cluster}.md` per in-scope cluster using the schema in `.claude/refs/modernization_manifest_schema.md`.
 
 Filename convention:
 - `modernization_manifest_A.md` — Code Transformation
@@ -217,6 +217,6 @@ Save all files to the repository root or `/training/` subdirectory.
 
 ## Reference Files
 
-- `skill_clusters.md` — cluster definitions, decision matrix, model strategy options
-- `modernization_manifest_schema.md` — full manifest structure
-- `manifest_delta_schema.md` — delta file schema
+- `.claude/refs/skill_clusters.md` — cluster definitions, decision matrix, model strategy options
+- `.claude/refs/modernization_manifest_schema.md` — full manifest structure
+- `.claude/refs/manifest_delta_schema.md` — delta file schema

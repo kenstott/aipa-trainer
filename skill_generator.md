@@ -187,5 +187,5 @@ All CSV fields double-quoted. Internal quotes escaped as `""`.
 
 ## Reference Files
 
-- `skill_clusters.md` — cluster definitions and cluster-specific generation guidance
-- `modernization_manifest_schema.md` — manifest structure reference
+- `.claude/refs/skill_clusters.md` — cluster definitions and cluster-specific generation guidance
+- `.claude/refs/modernization_manifest_schema.md` — manifest structure reference

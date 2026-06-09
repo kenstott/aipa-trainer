@@ -4,12 +4,25 @@
 # =============================================================================
 # Compatible with bash 3.2+ (macOS default shell).
 #
-# Installs three Claude Code skills into .claude/skills/:
-#   aipa-training-interviewer/  — skill audit + manifest generation
-#   aipa-training-generator/    — training data generation
-#   aipa-training-judge/        — batch quality evaluation
+# Installs three Claude Code skills and shared ref files:
 #
-# Runtime artifacts (manifests, datasets, reports) go into /training/.
+#   .claude/refs/                       — shared reference files
+#     skill_clusters.md
+#     modernization_manifest_schema.md
+#     manifest_delta_schema.md
+#
+#   .claude/skills/
+#     aipa-training-interviewer/SKILL.md
+#     aipa-training-generator/SKILL.md
+#     aipa-training-judge/SKILL.md
+#
+#   training/                           — runtime artifacts land here
+#     methodology.md
+#     skill_clusters.md
+#     .gitignore
+#
+# Ref files are referenced from skills using project-root paths:
+#   .claude/refs/skill_clusters.md
 #
 # Usage:
 #   chmod +x setup_training.sh
@@ -37,7 +50,7 @@ error()   { echo -e "${RED}✗ ${RESET}$*"; }
 header()  { echo -e "\n${BOLD}$*${RESET}"; }
 
 # -----------------------------------------------------------------------------
-# Cluster name lookup — bash 3.2 compatible
+# Cluster name lookup — bash 3.2 compatible (no associative arrays)
 # -----------------------------------------------------------------------------
 cluster_name() {
   case "$1" in
@@ -73,6 +86,7 @@ REPO_ROOT="$(find_repo_root)"
 # Target directories
 # -----------------------------------------------------------------------------
 CLAUDE_DIR="$REPO_ROOT/.claude"
+REFS_DIR="$CLAUDE_DIR/refs"
 SKILLS_DIR="$CLAUDE_DIR/skills"
 TRAINING_DIR="$REPO_ROOT/training"
 
@@ -83,20 +97,23 @@ SKILL_JUDGE="$SKILLS_DIR/aipa-training-judge"
 # -----------------------------------------------------------------------------
 # Source files required
 # -----------------------------------------------------------------------------
-# Skills (each becomes SKILL.md in its own directory)
-# Ref files (shared across skills that need them)
-ALL_SOURCE_FILES="skill_interviewer.md skill_generator.md skill_judge.md skill_clusters.md modernization_manifest_schema.md manifest_delta_schema.md methodology.md"
+SKILL_FILES="skill_interviewer.md skill_generator.md skill_judge.md"
+REF_FILES="skill_clusters.md modernization_manifest_schema.md manifest_delta_schema.md"
+TRAINING_FILES="methodology.md skill_clusters.md"
+
+ALL_SOURCE_FILES="$SKILL_FILES $REF_FILES methodology.md"
 
 # -----------------------------------------------------------------------------
 # Banner
 # -----------------------------------------------------------------------------
 echo ""
 echo -e "${BOLD}=================================================${RESET}"
-echo -e "${BOLD}  AIPA Training Pipeline — Setup v2.0          ${RESET}"
+echo -e "${BOLD}  AIPA Training Pipeline — Setup v2.1          ${RESET}"
 echo -e "${BOLD}=================================================${RESET}"
 echo ""
 info "Script location : $SCRIPT_DIR"
 info "Codebase root   : $REPO_ROOT"
+info "Refs dir        : $REFS_DIR"
 info "Skills dir      : $SKILLS_DIR"
 info "Training dir    : $TRAINING_DIR"
 
@@ -170,7 +187,9 @@ fi
 # -----------------------------------------------------------------------------
 header "3. Creating directories"
 
-for dir in "$CLAUDE_DIR" "$SKILLS_DIR" "$SKILL_INTERVIEWER" "$SKILL_GENERATOR" "$SKILL_JUDGE" "$TRAINING_DIR"; do
+for dir in "$CLAUDE_DIR" "$REFS_DIR" "$SKILLS_DIR" \
+           "$SKILL_INTERVIEWER" "$SKILL_GENERATOR" "$SKILL_JUDGE" \
+           "$TRAINING_DIR"; do
   if [ -d "$dir" ]; then
     info "Exists : $dir"
   else
@@ -267,40 +286,42 @@ else
 fi
 
 # -----------------------------------------------------------------------------
-# 5. Install skills into .claude/skills/
+# 5. Install shared ref files into .claude/refs/
 # -----------------------------------------------------------------------------
-header "5. Installing Claude Code skills"
+header "5. Installing shared reference files"
 
-# aipa-training-interviewer
-cp "$SCRIPT_DIR/skill_interviewer.md"           "$SKILL_INTERVIEWER/SKILL.md"
-cp "$SCRIPT_DIR/skill_clusters.md"              "$SKILL_INTERVIEWER/skill_clusters.md"
-cp "$SCRIPT_DIR/modernization_manifest_schema.md" "$SKILL_INTERVIEWER/modernization_manifest_schema.md"
-cp "$SCRIPT_DIR/manifest_delta_schema.md"       "$SKILL_INTERVIEWER/manifest_delta_schema.md"
-success "Installed: aipa-training-interviewer"
-
-# aipa-training-generator
-cp "$SCRIPT_DIR/skill_generator.md"             "$SKILL_GENERATOR/SKILL.md"
-cp "$SCRIPT_DIR/skill_clusters.md"              "$SKILL_GENERATOR/skill_clusters.md"
-cp "$SCRIPT_DIR/modernization_manifest_schema.md" "$SKILL_GENERATOR/modernization_manifest_schema.md"
-success "Installed: aipa-training-generator"
-
-# aipa-training-judge
-cp "$SCRIPT_DIR/skill_judge.md"                 "$SKILL_JUDGE/SKILL.md"
-cp "$SCRIPT_DIR/skill_clusters.md"              "$SKILL_JUDGE/skill_clusters.md"
-cp "$SCRIPT_DIR/manifest_delta_schema.md"       "$SKILL_JUDGE/manifest_delta_schema.md"
-success "Installed: aipa-training-judge"
+for f in $REF_FILES; do
+  DEST="$REFS_DIR/$f"
+  cp "$SCRIPT_DIR/$f" "$DEST"
+  success "Installed: .claude/refs/$f"
+done
 
 # -----------------------------------------------------------------------------
-# 6. Deploy methodology and cluster reference to /training
+# 6. Install skills into .claude/skills/
 # -----------------------------------------------------------------------------
-header "6. Deploying training reference files"
+header "6. Installing Claude Code skills"
 
-cp "$SCRIPT_DIR/methodology.md"    "$TRAINING_DIR/methodology.md"
-cp "$SCRIPT_DIR/skill_clusters.md" "$TRAINING_DIR/skill_clusters.md"
-success "Deployed reference files to /training"
+cp "$SCRIPT_DIR/skill_interviewer.md" "$SKILL_INTERVIEWER/SKILL.md"
+success "Installed: aipa-training-interviewer/SKILL.md"
+
+cp "$SCRIPT_DIR/skill_generator.md"   "$SKILL_GENERATOR/SKILL.md"
+success "Installed: aipa-training-generator/SKILL.md"
+
+cp "$SCRIPT_DIR/skill_judge.md"       "$SKILL_JUDGE/SKILL.md"
+success "Installed: aipa-training-judge/SKILL.md"
 
 # -----------------------------------------------------------------------------
-# 7. Create /training/.gitignore
+# 7. Deploy reference docs to /training/
+# -----------------------------------------------------------------------------
+header "7. Deploying training reference docs"
+
+for f in $TRAINING_FILES; do
+  cp "$SCRIPT_DIR/$f" "$TRAINING_DIR/$f"
+  success "Deployed: training/$f"
+done
+
+# -----------------------------------------------------------------------------
+# 8. Create /training/.gitignore
 # -----------------------------------------------------------------------------
 GITIGNORE="$TRAINING_DIR/.gitignore"
 if [ ! -f "$GITIGNORE" ]; then
@@ -318,31 +339,38 @@ judge_report_*.md
 modernization_manifest_*_backup_*.md
 skill_audit_backup_*.md
 
-# Commit these:
+# Commit these (version these as source of truth):
 # skill_audit.md
 # modernization_manifest_A.md (and _B _C _D _E)
 # manifest_delta_A.md (and _B _C _D _E)
 # methodology.md
 # skill_clusters.md
 EOF
-  success "Created /training/.gitignore"
+  success "Created training/.gitignore"
 fi
 
 # -----------------------------------------------------------------------------
-# 8. Summary and next steps
+# 9. Summary and next steps
 # -----------------------------------------------------------------------------
 echo ""
 echo -e "${BOLD}=================================================${RESET}"
 echo -e "${GREEN}${BOLD}  Setup complete${RESET}"
 echo -e "${BOLD}=================================================${RESET}"
 echo ""
-echo -e "  ${BOLD}Claude Code skills installed:${RESET}"
+echo -e "  ${BOLD}Shared ref files:${RESET}"
+for f in $REF_FILES; do
+  echo -e "    ${GREEN}✓${RESET} .claude/refs/$f"
+done
+echo ""
+echo -e "  ${BOLD}Claude Code skills:${RESET}"
 echo -e "    ${GREEN}✓${RESET} .claude/skills/aipa-training-interviewer/"
 echo -e "    ${GREEN}✓${RESET} .claude/skills/aipa-training-generator/"
 echo -e "    ${GREEN}✓${RESET} .claude/skills/aipa-training-judge/"
 echo ""
-echo -e "  ${BOLD}Training artifacts directory:${RESET}"
-echo -e "    ${GREEN}✓${RESET} $TRAINING_DIR"
+echo -e "  ${BOLD}Training reference docs:${RESET}"
+for f in $TRAINING_FILES; do
+  echo -e "    ${GREEN}✓${RESET} training/$f"
+done
 
 RETAINED=""
 for cluster in A B C D E; do

@@ -2,7 +2,7 @@
 
 A Claude Code skill suite for generating high-quality fine-tuning training data for AIPA Tuning, grounded in a real codebase rather than invented examples.
 
-Produced by Kenneth Stott
+Produced by World Tech Enterprises — WTE Pre-Engagement Research.
 
 ---
 
@@ -32,7 +32,7 @@ README.md                           — this file
 
 ## Prerequisites
 
-- bash 3.2+
+- macOS with bash 3.2+ (the macOS default — no Homebrew required)
 - Claude Code active in the target codebase
 - `ANTHROPIC_API_KEY` set (injected automatically by Claude Code)
 - Frontier model API access approved for the codebase (see Governance below)
@@ -49,22 +49,29 @@ chmod +x /path/to/setup_training.sh
 /path/to/setup_training.sh
 ```
 
-The script installs three Claude Code skills and creates a `training/` directory for runtime artifacts:
+The script installs three Claude Code skills, a shared refs directory, and creates a `training/` directory for runtime artifacts:
 
 ```
 {codebase-root}/
   .claude/
+    refs/
+      skill_clusters.md
+      modernization_manifest_schema.md
+      manifest_delta_schema.md
     skills/
-      aipa-training-interviewer/    ← Interviewer skill + ref files
-      aipa-training-generator/      ← Generator skill + ref files
-      aipa-training-judge/          ← Judge skill + ref files
+      aipa-training-interviewer/
+        SKILL.md
+      aipa-training-generator/
+        SKILL.md
+      aipa-training-judge/
+        SKILL.md
   training/
     methodology.md
     skill_clusters.md
     .gitignore
 ```
 
-On re-runs (iteration runs), the script detects existing manifests and asks whether to keep, selectively replace, or back them up and start fresh.
+Ref files are referenced from within skills using project-root paths, e.g. `.claude/refs/skill_clusters.md`. On re-runs, the script overwrites all skill and ref files with the latest versions.
 
 ---
 
@@ -169,6 +176,20 @@ This methodology requires a frontier model to read the real codebase at data gen
 | No external or frontier model access permitted | Methodology not applicable |
 
 Confirm data governance approval before running the Interviewer.
+
+---
+
+## Reference File Structure
+
+Shared reference files live in `.claude/refs/` and are referenced from within skills using project-root paths:
+
+```
+.claude/refs/skill_clusters.md
+.claude/refs/modernization_manifest_schema.md
+.claude/refs/manifest_delta_schema.md
+```
+
+This works because Claude Code resolves file references relative to the project root, not relative to the skill directory. A single copy in `.claude/refs/` is sufficient — no duplication needed across skill directories. Re-running `setup_training.sh` updates all files in place.
 
 ---
 

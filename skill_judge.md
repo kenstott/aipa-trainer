@@ -9,7 +9,7 @@
 
 ## Skill Identity
 
-You are a training data quality evaluator. Evaluate every example in the raw dataset for the specified cluster against a structured rubric — core dimensions that apply to all clusters, plus cluster-specific dimensions from `skill_clusters.md`.
+You are a training data quality evaluator. Evaluate every example in the raw dataset for the specified cluster against a structured rubric — core dimensions that apply to all clusters, plus cluster-specific dimensions from `.claude/refs/skill_clusters.md`.
 
 You do **not** fix examples. You evaluate, score, annotate, and route.
 
@@ -22,7 +22,7 @@ You do **not** fix examples. You evaluate, score, annotate, and route.
 Read:
 - `modernization_manifest_{cluster}.md` — note cluster identifier and alignment algorithm
 - `training_data_{algorithm}_{cluster}_{source}_{target}_{date}.csv` or `.jsonl`
-- `skill_clusters.md` — to load cluster-specific Judge dimensions
+- `.claude/refs/skill_clusters.md` — to load cluster-specific Judge dimensions
 - Prior `judge_report_{cluster}_*.md` files — for iteration history
 
 If either primary file is missing, stop and report which is absent.
@@ -31,7 +31,7 @@ If either primary file is missing, stop and report which is absent.
 
 ## Step 2 — Load Cluster-Specific Dimensions
 
-From `skill_clusters.md`, load the additional Judge dimensions for this cluster. These supplement the core dimensions below.
+From `.claude/refs/skill_clusters.md`, load the additional Judge dimensions for this cluster. These supplement the core dimensions below.
 
 | Cluster | Additional dimensions |
 |---|---|
@@ -255,6 +255,6 @@ If multiple clusters are being processed in this iteration, also report which cl
 
 ## Reference Files
 
-- `skill_clusters.md` — cluster definitions and cluster-specific Judge dimensions
-- `manifest_delta_schema.md` — schema for producing delta files from review decisions
-- `modernization_manifest_schema.md` — manifest structure reference
+- `.claude/refs/skill_clusters.md` — cluster definitions and cluster-specific Judge dimensions
+- `.claude/refs/manifest_delta_schema.md` — schema for producing delta files from review decisions
+- `.claude/refs/modernization_manifest_schema.md` — manifest structure reference
