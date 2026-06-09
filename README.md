@@ -2,7 +2,7 @@
 
 A Claude Code skill suite for generating high-quality fine-tuning training data for AIPA Tuning, grounded in a real codebase rather than invented examples.
 
-Produced by World Tech Enterprises — WTE Pre-Engagement Research.
+Produced by Kenneth Stott.
 
 ---
 
@@ -32,7 +32,7 @@ README.md                           — this file
 
 ## Prerequisites
 
-- macOS with bash 3.2+ (the macOS default — no Homebrew required)
+- bash 3.2+
 - Claude Code active in the target codebase
 - `ANTHROPIC_API_KEY` set (injected automatically by Claude Code)
 - Frontier model API access approved for the codebase (see Governance below)
