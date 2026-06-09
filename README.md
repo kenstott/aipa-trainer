@@ -2,7 +2,7 @@
 
 A Claude Code skill suite for generating high-quality fine-tuning training data for AIPA Tuning, grounded in a real codebase rather than invented examples.
 
-Produced by World Tech Enterprises — WTE Pre-Engagement Research.
+Produced by Kenneth Stott
 
 ---
 
