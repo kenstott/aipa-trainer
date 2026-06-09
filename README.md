@@ -32,7 +32,7 @@ README.md                           — this file
 
 ## Prerequisites
 
-- macOS with bash 3.2+ (the macOS default — no Homebrew required)
+- bash 3.2+
 - Claude Code active in the target codebase
 - `ANTHROPIC_API_KEY` set (injected automatically by Claude Code)
 - Frontier model API access approved for the codebase (see Governance below)
