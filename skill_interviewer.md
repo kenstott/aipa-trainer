@@ -1,6 +1,6 @@
 # Claude Code Skill — Interviewer (Modernization Manifest Generator)
 
-**Version:** 2.0
+**Version:** 2.1
 **Date:** 2026-06-09
 **Pipeline role:** Runs once per engagement and at the start of each iteration. Produces one `modernization_manifest_{cluster}.md` per in-scope cluster.
 **Output:** `modernization_manifest_A.md`, `modernization_manifest_B.md`, etc. (one per in-scope cluster)
@@ -53,7 +53,13 @@ Read `.claude/refs/skill_clusters.md` to understand the full cluster definitions
 
 **Cluster A — Code Transformation**
 - Will the team use AIPA for code review, bug detection, refactoring, performance optimisation, API redesign, or legacy modernization of this codebase?
-- What is the primary transformation target? (source language → target language/platform)
+- If yes: what is the transformation type? This determines the training data shape entirely:
+  - **Cross-language** — source language changes (e.g. Python → Go, COBOL → Java, VB6 → C#)
+  - **Cross-version** — same language, newer version (e.g. Python 2 → 3, Java 8 → 21, C++11 → C++20)
+  - **Cross-framework/paradigm** — same language, different framework or pattern (e.g. React class components → React Hooks, jQuery → vanilla ES6, AngularJS → Angular, Spring XML → Spring Boot)
+  - **Cross-architecture** — structural change (e.g. monolith → microservices, REST → GraphQL, sync → async)
+  - **Same-stack improvement** — no migration target; code review, bug fixing, refactoring, optimisation within the existing stack
+- What is the specific target? (must be precise — not just "Go" but "Go 1.22 with standard library HTTP"; not just "modern React" but "React 18 with hooks, functional components, TypeScript")
 
 **Cluster B — Documentation**
 - Will the team use AIPA to generate or improve documentation for this codebase?
@@ -119,13 +125,40 @@ For each in-scope cluster, conduct the targeted interview below. On iteration ru
 
 ### Cluster A — Code Transformation
 
-- Target language and platform (e.g. Java 21 + Spring Boot 3, .NET 8 + C#)
-- Target architecture (e.g. microservices, clean architecture)
-- Required frameworks or libraries
-- Key transformation patterns — be specific (e.g. "replace EXEC SQL SELECT with JPA repository findById() calls")
-- What must be preserved exactly (business logic, API contracts, database schemas)
-- What should be intentionally changed (error handling, logging, null safety)
-- Parts of the codebase to exclude
+**First — establish the transformation type and target. This is mandatory and must be answered before any other Cluster A questions. Do not proceed without a specific answer.**
+
+Ask explicitly:
+
+1. **Transformation type** — which of the following best describes this engagement?
+   - Cross-language (source language → different target language)
+   - Cross-version (same language, newer version or spec)
+   - Cross-framework/paradigm (same language, different framework or architectural pattern)
+   - Cross-architecture (structural modernization — e.g. monolith to microservices)
+   - Same-stack improvement (code review, refactoring, optimisation — no migration target)
+
+2. **Specific source** — confirm the source (inferred from codebase analysis, e.g. "Python 3.8 with Flask"). Ask the user to correct if wrong.
+
+3. **Specific target** — the user must state this explicitly. Accept nothing vague. Push back until precise:
+   - Not "Go" → "Go 1.22, standard library only, no third-party frameworks"
+   - Not "modern React" → "React 18, functional components with hooks, TypeScript 5, no class components"
+   - Not "newer Java" → "Java 21 with Spring Boot 3.2, virtual threads, records"
+   - Not "microservices" → "Spring Boot 3.2 microservices, REST APIs, Docker-deployed, PostgreSQL per service"
+   - For same-stack improvement: target is the same as source — confirm this explicitly
+
+Once transformation type and target are confirmed, continue:
+
+- Target architecture (if applicable — e.g. microservices, clean architecture, MVC)
+- Required frameworks or libraries in the target
+- Existing target-platform conventions or style guide (if any)
+- Key transformation patterns — be specific per transformation type:
+  - Cross-language: idiom mapping (e.g. "Python list comprehensions → Go slices with range loops")
+  - Cross-version: deprecated API replacements (e.g. "Python 2 print statements → Python 3 print()")
+  - Cross-framework: pattern replacements (e.g. "React class lifecycle methods → useEffect hooks")
+  - Cross-architecture: structural changes (e.g. "monolithic service boundaries → microservice boundaries")
+  - Same-stack: improvement rules (e.g. "replace mutable default arguments in Python function signatures")
+- What must be preserved exactly (business logic, API contracts, database schemas, external interfaces)
+- What should be intentionally changed beyond the migration target (error handling, logging, null safety, async patterns)
+- Parts of the codebase to exclude from transformation
 
 ### Cluster B — Documentation
 
@@ -180,6 +213,10 @@ Before writing each manifest, evaluate the draft against this checklist:
 - [ ] Are edge cases and difficult patterns mentioned, not just clean examples?
 
 **Cluster-specific checks:**
+- [ ] Cluster A: is the transformation type explicitly recorded (cross-language / cross-version / cross-framework / cross-architecture / same-stack)?
+- [ ] Cluster A: is the specific source confirmed (language, version, framework)?
+- [ ] Cluster A: is the specific target stated precisely (not vague — exact language/version/framework/library)?
+- [ ] Cluster A: are transformation patterns written for the correct transformation type?
 - [ ] Cluster B: are all required documentation types and formats specified?
 - [ ] Cluster C: is the test framework, coverage requirement, and naming convention specified?
 - [ ] Cluster D: is the report format, severity scale, and finding format specified?
