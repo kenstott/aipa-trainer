@@ -110,7 +110,7 @@ Each rule must be specific enough that two developers would apply it identically
 
 ## 4. Fine-Tuning Configuration
 
-**Target model:** {model name, e.g. Qwen2.5-14B-Instruct}
+**Target model:** {specific named model — e.g. `Qwen2.5-Coder-14B-Instruct`, `Qwen2.5-7B-Instruct`, `CodeLlama-34B-Instruct`, `DeepSeek-Coder-33B-Instruct`. A tier description (e.g. "14B–34B") is not valid here — the Generator validates this field and will block on a tier label.}
 **Model tier:** {3B–7B | 8B–13B | 14B–34B | 34B+}
 **Alignment algorithm:** {SFT | DPO | GRPO}
 **Example count:** {number, default 500}

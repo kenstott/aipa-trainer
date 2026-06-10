@@ -212,7 +212,7 @@ Options:
 
 ### Prompt 4 — Fine-tuning configuration
 
-Use `AskUserQuestion` with five questions in one call:
+Use `AskUserQuestion` with six questions in one call:
 
 **Question 1** — type: `single_select`
 Text: "Model strategy"
@@ -221,25 +221,33 @@ Options:
 - "Hybrid — one model for Cluster A, one shared model for B/C/D (recommended)"
 - "One model per cluster (best quality, most operational overhead)"
 
-**Question 2** — type: `single_select`
+**Question 2** — type: `free_text`
+Text: "Model name(s)"
+Pre-fill based on the strategy selected and in-scope clusters, using the tier from `skill_clusters.md`:
+- Hybrid (recommended): two lines — "Cluster A (14B–34B): Qwen2.5-Coder-14B-Instruct" and "Clusters B/C/D (7B–13B): Qwen2.5-7B-Instruct"
+- Single model: one line — "All clusters: Qwen2.5-Coder-14B-Instruct"
+- One per cluster: one line per in-scope cluster at the appropriate tier
+The user may substitute any specific model name. This value is written directly into the manifest's `Target model` field — a tier description (e.g. "14B–34B") is not acceptable; a named model is required.
+
+**Question 3** — type: `single_select`
 Text: "Alignment algorithm"
 Options:
 - "SFT — instruction / input / output pairs (recommended for first run)"
 - "DPO — chosen / rejected pairs (use after a successful SFT baseline)"
 - "GRPO — prompts + reward criteria (advanced — not for first runs)"
 
-**Question 3** — type: `free_text`
+**Question 4** — type: `free_text`
 Text: "Examples per cluster"
 Pre-fill: "500"
 
-**Question 4** — type: `single_select`
+**Question 5** — type: `single_select`
 Text: "Frontier model access approved for this codebase?"
 Options:
 - "Yes — enterprise API agreement in place"
 - "No — will use self-hosted model"
 - "Not yet confirmed"
 
-**Question 5** — type: `free_text`
+**Question 6** — type: `free_text`
 Text: "Engagement name"
 Pre-fill from repo name detected in analysis (e.g. "chonk — RAG pipeline library")
 
@@ -261,6 +269,7 @@ Before writing each manifest, silently verify:
 - [ ] Cluster D: audit types and severity scale specified?
 - [ ] Cluster E: platform specified?
 - [ ] Frontier access status recorded?
+- [ ] Target model is a specific named model (e.g. `Qwen2.5-Coder-14B-Instruct`), not a tier description — the Generator will block on a tier label.
 
 Fix silently. Only ask if something critical is genuinely missing.
 
