@@ -1,6 +1,6 @@
 # Claude Code Skill — Generator (Training Data Generation)
 
-**Version:** 2.0
+**Version:** 2.1
 **Date:** 2026-06-09
 **Pipeline role:** Consumes one `modernization_manifest_{cluster}.md` and the full codebase to produce a raw training dataset for that cluster. Run once per in-scope cluster.
 **Output:** `training_data_{algorithm}_{cluster}_{source}_{target}_{date}.csv` and/or `.jsonl`
@@ -143,6 +143,19 @@ For all clusters: add `// Note:` or `<!-- Note: -->` comments for ambiguous deci
 
 ## Step 5 — Output
 
+**Write output in batches, not as one large string.** Passing hundreds of examples in a single agent prompt will overflow the context window. Use this pattern instead:
+
+1. Each generation batch writes its examples to a numbered temp file:
+   `training/tmp/batch_{batch_id}.jsonl`
+
+2. After all batches complete, concatenate with bash:
+   ```bash
+   cat training/tmp/batch_*.jsonl > training/training_data_{algorithm}_{cluster}_{source}_{target}_{date}.jsonl
+   rm -rf training/tmp/
+   ```
+
+3. Verify line count matches expected example count.
+
 Filenames include cluster identifier:
 
 ### CSV
@@ -161,6 +174,8 @@ Filename: `training_data_{algorithm}_{cluster}_{source}_{target}_{date}.csv`
 Filename: `training_data_{algorithm}_{cluster}_{source}_{target}_{date}.jsonl`
 
 All CSV fields double-quoted. Internal quotes escaped as `""`.
+
+**If a batch exceeds the output token limit:** split it into two smaller batches of equal size rather than truncating. Never truncate examples. Log any splits in the generation summary.
 
 ---
 
@@ -189,3 +204,25 @@ All CSV fields double-quoted. Internal quotes escaped as `""`.
 
 - `.claude/refs/skill_clusters.md` — cluster definitions and cluster-specific generation guidance
 - `.claude/refs/modernization_manifest_schema.md` — manifest structure reference
+
+---
+
+## Revision 2.1 — Judge-feedback round 1 + execution gate (2026-06-10)
+
+Applied after a Cluster A Judge run scored 57.8% pass with three dominant, isolated failure modes (no single dimension > 30%): M6 complexity mismatch, M3 output error, M7 duplicate. Most relevant to code clusters (A, C, E). Feedback assessed as sound; the M3 remedy is upgraded from "prompt self-check" to an actual execution gate.
+
+**Fix 1 — Complexity band (M6 / D5).** Step 2's token caps bound the top but not the floor, so datasets fill with trivial constructs and occasional oversized pastes. Amend Steps 2–3 input selection:
+- Minimum meaningful construct: >= 10 lines AND at least one branch or loop (at least one non-trivial transformation decision). Skip pure getters/setters, one-line delegations, and bare constant declarations — the base model already handles these and they dilute the set.
+- Maximum per example: ~60 lines, never exceeding the tier's token cap. Split oversized classes into method-level or cohesive-block examples rather than pasting the whole class.
+
+**Fix 2 — Output validation gate (M3 / D1).** Do NOT rely on a prompt instruction to self-check compilation — models are unreliable compilers, which is how non-compiling output (missing imports, wrong type signatures, source-language artifacts such as Python slice notation left in Go) got through. Add an execution gate AFTER generation, BEFORE the example enters the dataset:
+- Compile every output / DPO `chosen` against the manifest's Target build command (e.g. `go build ./...` / `go vet`; `tsc`; `javac`). Reject non-compiling examples and regenerate.
+- Lint for source-language artifacts that cannot be valid in the target (e.g. Python `[a:b]` slices, f-strings, `self`, `None`). Reject on hit.
+- Where gold I/O pairs exist (Target test command), run them and require green — not merely compile-clean.
+- Record compile-pass and test-pass rates in the Step 6 summary. This converts "claimed correct" into "verified correct."
+- Applies to code clusters. For text clusters (B, D) the analogous gate is format/lint validation, not compilation.
+
+**Fix 3 — Deduplication + repetition signal (M7 / D6).** Near-duplicates concentrate in large modules where parallel batches sample the same common pattern. Amend Step 3:
+- Maintain a registry of source functions/constructs already emitted (normalized signature / AST hash). Exclude near-duplicates of already-emitted sources before generation.
+- Keep enough instances per pattern for robust learning, but drop redundant near-identical ones; prioritise variety within a pattern over repetition of it.
+- Emit the duplication histogram (instances per source pattern) in the Step 6 summary. High duplication is the repetition signal indicating which modules are most adapter-tractable — keep the count even as you drop the duplicates.

@@ -173,3 +173,44 @@ Derived automatically by the Interviewer from the model tier. Do not override.
 
 ### Iteration history (section 6)
 Maintained automatically by the Interviewer. Do not edit manually.
+
+---
+
+## Revision — 2026-06-10 (objective capture, output correctness, complexity band)
+
+Additions to the schema, primarily for code clusters (A; also C, E where outputs are code/SQL).
+
+**Add §0 Objective & Validation (top of the manifest, before §1):**
+
+~~~markdown
+## 0. Objective & Validation
+**Objective:** {one line — what the fine-tuned model/adapter is for}
+**Scope mode:** {pure language port | re-platform | re-architecture | mixed}
+**In scope:** {what transforms}
+**Out of scope:** {what does NOT — e.g. architecture, business logic}
+**Bulk target:** {whole codebase | named subset}
+**Validation method:** {one of the three oracle paths below — the oracle is required; how you obtain it is not}
+- `existing tests` — a CI suite or test file already validates the source at the external-contract level; port it alongside the code and re-run against the target. Most common path.
+- `characterization tests` — no adequate tests exist; generate them from the running source before porting (Characterizer skill, if available). Captures the external contract as golden I/O.
+- `golden I/O` — manually curated input/output pairs at the public API boundary; use when a running source environment is unavailable or impractical.
+The Characterizer skill is optional and only needed when neither existing tests nor manual golden I/O is available.
+**Success metric:** first-pass tests-green % and after-fix-loop tests-green %
+**Target build command:** {e.g. go build ./...}
+**Target test command:** {e.g. go test ./...}
+~~~
+
+For a **pure language port**: Target architecture = unchanged (mirror source 1:1); Intentionally change = none.
+
+**§2 Task Target (Cluster A) — add two fields:**
+- **Target build command:** {command the Generator uses to verify every output compiles}
+- **Target test command:** {command used to verify behavioural equivalence where gold I/O exists}
+
+**§3 Task Rules (Cluster A) — add an Output Correctness Rules subsection:**
+- Every output must compile against the Target build command (verified by execution, not assertion).
+- No source-language artifacts may survive into the target (enumerate the source→target traps for this pair).
+- Imports/dependencies complete and correct; type signatures valid in the target type system.
+- Where gold I/O pairs exist, output must pass them.
+
+**§4 Fine-Tuning Configuration — operational complexity band** (defines what the tier-derived complexity means; not a manual override):
+- Minimum construct: >= 10 lines AND at least one branch or loop. Exclude pure getters/setters, one-line delegations, bare constants.
+- Maximum construct: ~60 lines, never exceeding the tier token cap; split larger classes into method-level examples.

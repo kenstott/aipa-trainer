@@ -26,12 +26,24 @@
 #
 # Usage:
 #   chmod +x setup_training.sh
-#   ./setup_training.sh
+#   ./setup_training.sh              # normal run
+#   ./setup_training.sh --restart    # back up and clear all manifests for a fresh start
 #
 # All source .md files must be in the same directory as this script.
 # =============================================================================
 
 set -euo pipefail
+
+# -----------------------------------------------------------------------------
+# Parse flags
+# -----------------------------------------------------------------------------
+RESTART=false
+for arg in "$@"; do
+  case "$arg" in
+    --restart) RESTART=true ;;
+    *) warn "Unknown flag: $arg" ;;
+  esac
+done
 
 # -----------------------------------------------------------------------------
 # Colour helpers
@@ -218,7 +230,23 @@ if [ -f "$TRAINING_DIR/skill_audit.md" ]; then
   SKILL_AUDIT_EXISTS=true
 fi
 
-if [ "$ITERATION_RUN" = true ]; then
+if [ "$RESTART" = true ] && [ "$ITERATION_RUN" = true ]; then
+  STAMP="$(date +%Y%m%d_%H%M%S)"
+  for cluster in $EXISTING_CLUSTERS; do
+    MANIFEST="$TRAINING_DIR/modernization_manifest_${cluster}.md"
+    cp "$MANIFEST" "$TRAINING_DIR/modernization_manifest_${cluster}_backup_${STAMP}.md"
+    rm "$MANIFEST"
+    success "Cluster $cluster manifest backed up and removed"
+  done
+  if [ "$SKILL_AUDIT_EXISTS" = true ]; then
+    cp "$TRAINING_DIR/skill_audit.md" "$TRAINING_DIR/skill_audit_backup_${STAMP}.md"
+    rm "$TRAINING_DIR/skill_audit.md"
+    success "Skill audit backed up and removed"
+  fi
+  info "Restart complete — all manifests cleared"
+  ITERATION_RUN=false
+  EXISTING_CLUSTERS=""
+elif [ "$ITERATION_RUN" = true ]; then
   echo ""
   info "Existing manifests found for clusters:$EXISTING_CLUSTERS"
   if [ "$SKILL_AUDIT_EXISTS" = true ]; then
@@ -231,6 +259,7 @@ if [ "$ITERATION_RUN" = true ]; then
   echo "  [s] Select which manifests to keep or replace"
   echo "  [f] Back up all and start completely fresh"
   echo "  [a] Abort"
+  echo "  (tip: run with --restart to skip this prompt and clear all manifests)"
   echo ""
   printf "  Your choice [k/s/f/a]: "
   read -r MANIFEST_CHOICE

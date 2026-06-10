@@ -146,3 +146,12 @@ By production quality, each cluster's manifest contains human-validated rules fo
 ## Midmarket Relevance
 
 Midmarket companies have real AI ambitions and proprietary codebases but no on-premise GPU infrastructure and budget constraints that preclude frontier inference at scale. This methodology combined with an external training backend (e.g. Together.ai) removes both barriers. The hybrid model strategy (Option 3) is particularly well-suited to midmarket — two models cover the full AIPA skill breadth at a cost and complexity level appropriate for the segment.
+
+---
+
+## Revision note — 2026-06-10
+
+Three refinements now reflected in the skills and manifest schema:
+1. **Verified, not judged, outputs** — the Generator compiles every code output against the manifest's build command (and runs gold I/O where present) before it enters the dataset; the Judge's D1/D2 consume those results. Unverified frontier output is not treated as gold.
+2. **Objective & validation capture** — each code-cluster manifest opens with a §0 recording the objective, scope mode (e.g. pure language port), bulk target, and the tests-green success metric.
+3. **Consistency check** — the Judge flags the same source pattern transformed inconsistently across examples (M2), preventing a confidently-inconsistent adapter.

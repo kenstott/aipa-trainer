@@ -2,7 +2,7 @@
 
 A Claude Code skill suite for generating high-quality fine-tuning training data for AIPA Tuning, grounded in a real codebase rather than invented examples.
 
-Produced by Kenneth Stott.
+**Author:** Kenneth Stott
 
 ---
 
@@ -32,7 +32,7 @@ README.md                           — this file
 
 ## Prerequisites
 
-- bash 3.2+
+- macOS with bash 3.2+ (the macOS default — no Homebrew required)
 - Claude Code active in the target codebase
 - `ANTHROPIC_API_KEY` set (injected automatically by Claude Code)
 - Frontier model API access approved for the codebase (see Governance below)
@@ -46,7 +46,8 @@ Drop all files from this package into a single flat directory, then from the roo
 
 ```bash
 chmod +x /path/to/setup_training.sh
-/path/to/setup_training.sh
+/path/to/setup_training.sh              # normal run — prompts if manifests exist
+/path/to/setup_training.sh --restart    # back up and clear all manifests for a fresh start
 ```
 
 The script installs three Claude Code skills, a shared refs directory, and creates a `training/` directory for runtime artifacts:
@@ -212,3 +213,15 @@ Once the Judge pass rate reaches ≥ 90% for a cluster:
 - `skill_clusters.md` — cluster definitions, decision matrix, model strategy options, cluster-specific Judge dimensions
 - `modernization_manifest_schema.md` — complete manifest schema with field guidance
 - `manifest_delta_schema.md` — delta file schema with five worked examples
+
+---
+
+## Revisions — 2026-06-10
+
+- **skill_generator.md → 2.1:** complexity band (min/max construct size), output execution gate (compile + gold-I/O, replacing prompt self-check), dedup registry + duplication histogram.
+- **skill_interviewer.md → 7.1:** pure-language-port handling (architecture held constant, behaviour preserved), build/test command capture, §0 objective & validation, self-critique checks.
+- **skill_judge.md → 2.1:** D1/D2 consume execution results for code clusters; cross-example consistency check (M2).
+- **modernization_manifest_schema.md:** §0 Objective & Validation, §2 build/test commands, §3 output-correctness rules, §4 operational complexity band.
+- **methodology.md:** revision note summarising the above.
+- Unchanged: skill_clusters.md, manifest_delta_schema.md, setup_training.sh.
+- Added (separate, not installed by setup): modernization_manifest_A.md — a filled Cluster A manifest for the Python→Go pure-port AIPA evaluation.

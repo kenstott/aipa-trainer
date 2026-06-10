@@ -1,6 +1,6 @@
 # Claude Code Skill — Judge (Batch Quality Evaluation)
 
-**Version:** 2.0
+**Version:** 2.1
 **Date:** 2026-06-09
 **Pipeline role:** Evaluates a raw training dataset for one cluster and routes the pipeline to the correct next action. Run once per cluster per iteration.
 **Output:** `annotated_dataset_{cluster}_{date}.csv`, `judge_report_{cluster}_{date}.md`, `review_queue_{cluster}_{date}.md`
@@ -258,3 +258,11 @@ If multiple clusters are being processed in this iteration, also report which cl
 - `.claude/refs/skill_clusters.md` — cluster definitions and cluster-specific Judge dimensions
 - `.claude/refs/manifest_delta_schema.md` — schema for producing delta files from review decisions
 - `.claude/refs/modernization_manifest_schema.md` — manifest structure reference
+
+---
+
+## Revision 2.1 — consume execution results + consistency check (2026-06-10)
+
+**D1 / D2 consume execution results where available (code clusters).** Once the Generator's execution gate (Generator Rev 2.1, Fix 2) is in place, D1 (output correctness) and the code half of D2 should read the recorded compile result and gold-I/O test result rather than re-assessing correctness by eye. Reading-based judgement remains the fallback only where no execution result exists. This makes D1/D2 objective for code.
+
+**Cross-example consistency check (complements M7).** D6 (Uniqueness) guards against examples that are too similar. Add the opposite guard: flag when the same source pattern is transformed inconsistently across examples (same input pattern → divergent output shape). Inconsistent gold teaches the model variance and yields a confidently-inconsistent adapter. If systemic (one pattern transformed multiple ways), it is a manifest-ambiguity signal — classify as M2 and route to a manifest delta, not individual review.
